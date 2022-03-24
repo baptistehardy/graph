@@ -1,0 +1,39 @@
+version: '3'
+
+services:
+  grafana:
+    image: grafana/grafana-oss:8.4.4
+    container_name: 'grafana'
+    ports:
+      - 3000:3000
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - graph_network
+    env_file:
+      - ./grafana/grafana.env
+    restart: always
+
+  prometheus:
+    image: prom/prometheus:v2.34.0
+    container_name: 'prometheus'
+    ports:
+      - 9090:9090
+    volumes:
+      - ./prometheus/:/etc/prometheus/
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    networks:
+      - graph_network
+    restart: always
+
+volumes:
+  grafana_data: {}
+  prometheus_data: {}
+
+networks:
+  graph_network:
