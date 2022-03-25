@@ -5,7 +5,7 @@ services:
     image: grafana/grafana-oss:8.4.4
     container_name: 'grafana'
     ports:
-      - 3000:3000
+      - '3000:3000'
     volumes:
       - grafana_data:/var/lib/grafana
       - ./grafana/provisioning/:/etc/grafana/provisioning/
@@ -19,7 +19,7 @@ services:
     image: prom/prometheus:v2.34.0
     container_name: 'prometheus'
     ports:
-      - 9090:9090
+      - '9090:9090'
     volumes:
       - ./prometheus/:/etc/prometheus/
       - prometheus_data:/prometheus
@@ -31,6 +31,35 @@ services:
     networks:
       - graph_network
     restart: always
+
+  unpoller:
+    image: golift/unifi-poller:latest
+    container_name: unpoller
+    ports:
+      - '9130:9130'
+    volumes:
+      - ./unpoller:/config
+    networks:
+      - graph_network
+    depends_on:
+      - grafana
+      - prometheus
+    environment:
+      - UP_INFLUXDB_DISABLE=true
+      - UP_POLLER_DEBUG=false
+      - UP_UNIFI_DYNAMIC=false
+      - UP_PROMETHEUS_HTTP_LISTEN=0.0.0.0:9130
+      - UP_PROMETHEUS_NAMESPACE=unpoller
+      - UP_UNIFI_DEFAULT_URL=${UNIFI_URL}
+      - UP_UNIFI_DEFAULT_USER=${UNIFI_USER}
+      - UP_UNIFI_DEFAULT_PASS=${UNIFI_PASSWORD}
+      - UP_UNIFI_DEFAULT_SAVE_ALARMS=true
+      - UP_UNIFI_DEFAULT_SAVE_ANOMALIES=true
+      - UP_UNIFI_DEFAULT_SAVE_DPI=true
+      - UP_UNIFI_DEFAULT_SAVE_EVENTS=true
+      - UP_UNIFI_DEFAULT_SAVE_IDS=true
+      - UP_UNIFI_DEFAULT_SAVE_SITES=true
+    restart: unless-stopped
 
 volumes:
   grafana_data: {}
