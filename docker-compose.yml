@@ -23,18 +23,13 @@ services:
     volumes:
       - ./prometheus/:/etc/prometheus/
       - prometheus_data:/prometheus
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
-      - '--web.console.templates=/usr/share/prometheus/consoles'
     networks:
       - graph_network
     restart: always
 
   unpoller:
     image: golift/unifi-poller:latest
-    container_name: unpoller
+    container_name: 'unpoller'
     ports:
       - '9130:9130'
     volumes:
