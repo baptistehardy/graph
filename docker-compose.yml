@@ -15,6 +15,29 @@ services:
       - ./grafana/grafana.env
     restart: always
 
+  loki:
+    image: grafana/loki:2.4.2
+    container_name: 'loki'
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./loki:/mnt/config
+    command: -config.file=/mnt/config/loki-config.yml
+    networks:
+      - graph_network
+
+  promtail:
+    image: grafana/promtail:2.4.2
+    container_name: 'promtail'
+    volumes:
+      - ./promtail:/mnt/config
+      - /var/log:/var/log
+    command: -config.file=/mnt/config/promtail-config.yml
+    links:
+      - loki
+    networks:
+      - graph_network
+
   prometheus:
     image: prom/prometheus:v2.34.0
     container_name: 'prometheus'
